@@ -15,4 +15,9 @@ use snark_verifier_sdk::{
     halo2::aggregation::{AggregationCircuit, AggregationConfigParams, VerifierUniversality},
     CircuitExt, Snark, SHPLONK,
 };
+use wasm_bindgen::prelude::*;
 pub mod helpers;
+#[wasm_bindgen]
+extern "C" {
+    pub fn alert(s: &str);
+}

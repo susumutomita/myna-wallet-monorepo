@@ -2168,6 +2168,7 @@ dependencies = [
  "sha2",
  "snark-verifier-sdk",
  "tokio",
+ "wasm-bindgen",
  "x509-parser",
  "zkevm-hashes",
 ]
