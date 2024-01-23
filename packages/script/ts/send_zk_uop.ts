@@ -52,20 +52,20 @@ const pimlicoBundlerClient = createClient({
     .extend(bundlerActions)
     .extend(pimlicoBundlerActions)
 
-// This script is used to send a user operation to the bundler.
-async function main() {
-    // ----Start: Get the sender address----
+export async function getSenderDetails(): Promise<[Hex, `0x${string}`, boolean]> {
     const identityCommitment = `0x${BigInt(
         '14017679899199987368129010213560985038827516605553493083266778599417419626762'
-    ).toString(16)}` as Hex
-    const salt = 0n
-    const initCode = createInitCode(identityCommitment, salt)
-    const [senderAddress, isPhantom] = await getAddress(initCode)
-    console.log('senderAddress', senderAddress)
-    console.log('isPhantom(not deployed)', isPhantom)
-    // ----End: Get the sender address----
+    ).toString(16)}` as Hex;
+    const salt = 0n;
+    const initCode = createInitCode(identityCommitment, salt);
+    const [senderAddress, isPhantom] = await getAddress(initCode);
+    console.log('senderAddress', senderAddress);
+    console.log('isPhantom(not deployed)', isPhantom);
 
-    // ----Start: Generate calldata----
+    return [initCode, senderAddress, isPhantom];
+}
+
+export function generateCallData(): `0x${string}` {
     const to = '0x199012076Ea09f92D8C30C494E94738CFF449f57'
     const value = parseEther('0.01')
     const data = '0x'
@@ -75,7 +75,13 @@ async function main() {
         functionName: 'execute',
         args: [to, value, data]
     })
-    // ----End: Generate calldata----
+
+    return callData;
+}
+
+export async function main() {
+    const [initCode, senderAddress, isPhantom] = await getSenderDetails()
+    const callData = generateCallData();
 
     // ----Start: Generate user operation----
     const gasPrice = await getUserOperationGasPrice()
@@ -201,7 +207,7 @@ export function createInitCode(identityCommitment: Hex, salt: bigint): Hex {
     return initCode
 }
 
-async function getAddress(initCode: Hex): Promise<[Address, boolean]> {
+export async function getAddress(initCode: Hex): Promise<[Address, boolean]> {
     const senderAddress = await getSenderAddress(publicClient, {
         initCode,
         entryPoint: ENTRY_POINT_ADDRESS
@@ -301,8 +307,9 @@ async function sponsorUserOperation(
     return userOperation as UserOperation
 }
 
-function getTestRsaKey() {
-    return new NodeRSA(`-----BEGIN RSA PRIVATE KEY-----
+
+export function getTestRsaKey() {
+    const rsaKey = process.env.RSA_PRIVATE_KEY || `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAj2BHBk9AD9L/gK1lacLP/COAeeLLGGSDBaWbnx84lzD5v5te
 PkNviAZcBiQccYm6Q7atvl7HqXnUtC8qRQzRnoB15agXsEMooNFuv8trwJqWAgIX
 r2IY83ZdvBKRMe3QBEcqtFkIvwLsNbfAROHJAPffF5/BnJSDWALljEMrxzzuVBSK
@@ -328,7 +335,8 @@ DsF4rgjwrgES/JGKKXiNC8AQykfdwfU1WnPoDh9Ie2sxx0Uy2+39eUqt5GSAp1s1
 dzm7PQKBgQDTWs2NKZuB4b6o0CEHte+SoINfHvVFDWbotJAZ//l+z1SmTlH7qb+/
 jsDhmF/uizOdlopee6fdDaIzYNxEOseI2dx3UjLk6QYqtPBCu9KJ1juSeCReMSjH
 BWhALtiQk07pmfH+zFEYEwBhZ0OKaUAZuabat21qFr0cuX1VN8jtBQ==
------END RSA PRIVATE KEY-----`)
+-----END RSA PRIVATE KEY-----`
+    return new NodeRSA(rsaKey)
 }
 
 function bigint_to_array(n: number, k: number, x: bigint) {

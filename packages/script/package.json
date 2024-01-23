@@ -8,7 +8,7 @@
     "test": "TZ=UTC jest",
     "test:coverage": "TZ=UTC jest --coverage",
     "test:debug": "TZ=UTC jest --debug",
-    "test:watch": "TZ=UTC jest -w"
+    "test:watch": "TZ=UTC jest --watch"
   },
   "engines": {
     "node": ">=18"
